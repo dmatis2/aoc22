@@ -1,35 +1,53 @@
 import { getFileContent, getDataAsArray } from './utils.js';
+interface Section {
+  firstFrom: number;
+  firstTo: number;
+  secondFrom: number;
+  secondTo: number;
+}
 
-const getPriority = (letter: string) => {
-  if(letter.toLowerCase() === letter) {
-    return 1 + letter.charCodeAt(0) - 'a'.charCodeAt(0);
+const parseInput = (arr: string[]): Section[] => {
+  const regex = /(?<firstFrom>\d+)\-(?<firstTo>\d+),(?<secondFrom>\d+)\-(?<secondTo>\d+)/;
+  return arr.map(line => {
+    const { firstFrom, firstTo, secondFrom, secondTo } = line.match(regex)?.groups!;
+    return {
+      firstFrom: parseInt(firstFrom),
+      firstTo: parseInt(firstTo),
+      secondFrom: parseInt(secondFrom),
+      secondTo: parseInt(secondTo),
+    }
+  });
+}
+
+const isFullyContained = (pair: Section) => {
+  const firstLength = pair.firstTo - pair.firstFrom;
+  const secondLength = pair.secondTo - pair.secondFrom;
+  if(firstLength >= secondLength) {
+    return pair.firstFrom <= pair.secondFrom && pair.secondTo <= pair.firstTo;
   }
-  return 27 + letter.charCodeAt(0) - 'A'.charCodeAt(0); 
+  return pair.secondFrom <= pair.firstFrom && pair.firstTo <= pair.secondTo;
 }
 
-const appearsInBothHalves = (arr: string[]) => {
-  return arr.reduce((acc, l) => acc + getPriority(l.slice(l.length / 2).split('').filter(m => l.slice(0, l.length / 2).includes(m))[0]), 0);
+const isPartiallyContained = (pair: Section) => {
+  if(pair.firstFrom <= pair.secondFrom) {
+    return pair.firstTo >= pair.secondFrom
+  }
+  return pair.secondTo >= pair.firstFrom
 }
 
-const appearsInAllThree = (arrSlice: string[]) => {
-  return getPriority([...new Set(arrSlice[0].split('').filter(l => arrSlice[1].split('').includes(l) && arrSlice[2].split('').includes(l)))][0]);
-}
 
-const first = (arr: string[]) => {
-  const result = appearsInBothHalves(arr);
+const first = (arr: Section[]) => {
+  const result = arr.filter(pair => isFullyContained(pair)).length;
   console.log(result);
   return result;
 };
 
-const second = (arr: string[]) => {
-  let result = 0;
-  for(let i = 0; i < arr.length; i+=3) {
-    result += appearsInAllThree(arr.slice(i, i+3));
-  }
+const second = (arr: Section[]) => {
+  const result = arr.filter(pair => isPartiallyContained(pair)).length;
   console.log(result);
   return result;
 };
 
-const data = getDataAsArray(getFileContent('input.txt'));
-console.assert(first(data) === 7875, 'Not matching first part');
-console.assert(second(data) === 2479, 'Not matching second part');
+const data = parseInput(getDataAsArray(getFileContent('input.txt')));
+console.assert(first(data) === 582, 'Not matching first part');
+console.assert(second(data) === 893, 'Not matching second part');
