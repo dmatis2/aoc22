@@ -62,9 +62,8 @@ const process = (state: State): State => {
 
 const processInSameOrder = (state: State): State => {
   state.steps.forEach(step => {
-    const moving = state.stacks[step.from - 1].splice(state.stacks[step.from - 1].length - 1 - step.count, step.count);
+    const moving = state.stacks[step.from - 1].splice(state.stacks[step.from - 1].length - step.count, step.count);
     state.stacks[step.to - 1] = [...state.stacks[step.to - 1], ...moving]
-    console.log(state.stacks)
   })
   return state;
 }
@@ -77,15 +76,12 @@ const first = (state: State) => {
 };
 
 const second = (state: State) => {
-  console.log('--- START ---', state.stacks);
-  
   const processed = processInSameOrder(state);
   const result = processed.stacks.map(stack => stack[stack.length - 1]).join('');
   console.log(result);
   return result;
 };
 
-const data = parseInput(getFileContent('example.txt'));
-const data2 = {...data};
-console.assert(first(data) === 'WHTLRMZRC', 'Not matching first part');
-console.assert(second(data2) === 'MCD', 'Not matching second part');
+const data = parseInput(getFileContent('input.txt'));
+console.assert(first(JSON.parse(JSON.stringify(data))) === 'WHTLRMZRC', 'Not matching first part');
+console.assert(second(JSON.parse(JSON.stringify(data))) === 'MCD', 'Not matching second part');
