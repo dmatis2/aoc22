@@ -53,23 +53,23 @@ const second = (arr: string[]) => {
       }
       if(location === '/') {
         currentPath = [''];
-        if(!map.has(getPath(currentPath))) map.set(getPath(currentPath), 0);
+        const currentFullPath = getPath(currentPath);
+        if(!map.has(currentFullPath)) map.set(currentFullPath, 0);
         return;
       }
       currentPath = [...currentPath, location];
-      if(!map.has(getPath(currentPath))) map.set(getPath(currentPath), 0);
+      const currentFullPath = getPath(currentPath);
+      if(!map.has(currentFullPath)) map.set(currentFullPath, 0);
       return;
     }
     if(isFile(line)) {
       const fileSize = parseInt(line.split(' ')[0]);
-      const currentFullPath = getPath(currentPath);
-      map.set(currentFullPath, map.get(currentFullPath) + fileSize);
       let tmpPath = [...currentPath];
       while(true) {
         if(tmpPath.length === 0) break;
+        const currentFullPath = getPath(tmpPath);
+        map.set(currentFullPath, map.get(currentFullPath) + fileSize);
         tmpPath.pop();
-        const tmpFullPath = getPath(tmpPath);
-        map.set(tmpFullPath, map.get(tmpFullPath) + fileSize);
       }
     }
   })
