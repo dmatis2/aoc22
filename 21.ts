@@ -101,112 +101,63 @@ const first = (arr: string[]) => {
 };
 
 const second = (arr: string[]) => {
-  const map = processMap(parseInput(arr, false));
-  const queue: string[] = [...map.keys()];
+  const map = parseInput(arr, false);
+  let count = 0;
+  let stack = ['root'];
+  let completed: string[] = [];
+  [...map.keys()].forEach(key => {
+    const tmp = map.get(key)!;
+    map.set(key, {...map.get(key)!, job: tmp.job ? tmp.job!.replace(/([a-z]+)/g, `($1)`) : null})
+  });
+  console.log(map);
 
-  const builtStrings = new Map<string, string | null>();
-
-  while(queue.length > 0) {
-    const curr = queue.shift()!;
-    if(curr === 'humn') continue;
-    if(!builtStrings.has(curr)) {
-      const { job, number } = map.get(curr)!;
-      builtStrings.set(curr, job ? job : number!.toString());
-      queue.push(curr);
-      continue;
-    }
-    const matches = builtStrings.get(curr)!.match(/[a-z]+/g)!;
-    let newStr = builtStrings.get(curr)!;
-    if(matches && matches.length === 1 && matches[0] === 'humn') {
-      // only 'humn' var inside, this is final
-      continue;
-    } else if(matches && matches.length > 1) {
-      // two vars are there, we need to check them if they are numbers or not
-      const [ l, r ] = matches.slice(0, 2);
-      if(l !== 'humn' && builtStrings.has(l)) {
-        const parsed = parseInt(builtStrings.get(l)!)
-        if(!Number.isNaN(parsed)) {
-          newStr = newStr.replace(l, `(${parsed})`)
-          builtStrings.set(curr, newStr);
-        } else {
-          queue.push(l);
-          queue.push(curr);
+  while(stack.length > 0) {
+    let curName = stack.pop()!;
+    console.log("🚀 ~ file: 21.ts:116 ~ second ~ stack", stack)
+    if(completed.includes(curName)) continue;
+    let curObj = map.get(curName)!;
+    console.log("🚀 ~ file: 21.ts:118 ~ second ~ curObj", curObj)
+    if(curObj.job) {
+      let areNumbers = curObj.job.match(/\d+/g)
+      if(areNumbers) {
+        if(areNumbers.length === 1) {
+          completed.push(curName);
+          continue;
         }
-      } else if(r !== 'humn' && builtStrings.has(r)) {
-        const parsed = parseInt(builtStrings.get(r)!)
-        if(!Number.isNaN(parsed)) {
-          newStr = newStr.replace(r, `(${parsed})`)
-          builtStrings.set(curr, newStr);
-        } else {
-          queue.push(r);
-          queue.push(curr);
+        if(areNumbers.length === 2) {
+          let solution = 0;
+          eval(`solution = ${curObj.job}`);
+          map.set(curName, {...map.get(curName)!, job: `(${solution})`})
+          continue;
         }
-      } else {
-        queue.push(l)
-        queue.push(r)
-        queue.push(curr)
       }
-    } else if(!matches) {
-      // no vars are there, check if it is a number or calculate solution
-      const c = builtStrings.get(curr)!;
-      if(Number.isNaN(parseInt(c))) {
-        console.log('need to calculate', c);
-        const matches = builtStrings.get(curr)!.match(/[a-z]+/g)!;
-        const operand = builtStrings.get(curr)!.match(/(\+|\-|\*|\/)/)!;
-        const [ l, r ] = matches.slice(0, 2);
-        const leftParsed = parseInt(builtStrings.get(l)!)
-        const rightParsed = parseInt(builtStrings.get(r)!)
-        let solution = 0;
-        if(!Number.isNaN(leftParsed) && !Number.isNaN(rightParsed)) {
-          eval(`solution = ${leftParsed} ${operand} ${rightParsed}`);
-          builtStrings.set(curr, `(${solution})`);
+      let matches: string[] | null = curObj.job.match(/[a-z]+/g)
+      if(!matches) continue;
+      matches = matches.filter(m => m !== 'humn')
+      let willGoToStack: string[] = [];
+      matches.forEach(match => {
+        const num = map.get(match)!.number
+        const job = map.get(match)!.job!
+        console.log("🚀 ~ file: 21.ts:140 ~ second ~ job", job)
+        if(num) {
+          map.set(curName, {...map.get(curName)!, job: map.get(curName)!.job!.replace(match, `${num}`)})
+        } else if(!Number.isNaN(parseInt(job))) {
+          map.set(curName, {...map.get(curName)!, job: map.get(curName)!.job!.replace(match, `${job}`)})
+        } else {
+          willGoToStack.unshift(match);
         }
-        else if(l !== 'humn' && Number.isNaN(leftParsed)) {
-          queue.push(l);
-          queue.push(curr);
-        } else if(r !== 'humn' && Number.isNaN(rightParsed)) {
-          queue.push(r);
-          queue.push(curr);
-        }
-      } 
+      })
+      if(willGoToStack.length > 0) {
+        stack.push(curName);
+        willGoToStack.forEach(match => stack.push(match));
+      }
     }
   }
-  console.log(builtStrings);
-  
 
-  // while(queue.length > 0) {
-  //   const curr = queue.shift()!;
-  //   if(builtStrings.has(curr)) {
-  //     const matches = builtStrings.get(curr)!.match(/\[a-z]+/g)!;
-  //     if(matches && matches.length === 1 && matches[0] === 'humn') {
-  //       continue;
-  //     }
-  //     matches.every(match => )
-  //     queue.push(curr);
-  //     continue;
-  //   }
-  // }
+  console.log(map);
   
-  // let built = referenceMap.get('root')!.job!;
-  let built = "25 + 15";
-  let needProcessing = true;
-  while(needProcessing) {
-    const matches = built.match(/\[a-z]+/g)
-    if(!matches) {
-      needProcessing = false;
-      break;
-    }
-    matches.forEach(match => {
-
-    })
-  }
-  // const built = jobBuilderByReference(map, referenceMap);
-  // console.log(built);
-  // let jobBuilt = built.get('root')!.job;
+  return 0;
   
-  const result = 0;
-  console.log(result);
-  return result;
 };
 
 const data = getDataAsArray(getFileContent('example.txt'));

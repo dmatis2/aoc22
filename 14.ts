@@ -49,20 +49,6 @@ const processRock = (rock: string[]) => {
   return rocks;
 }
 
-const getNotAccessiblePointCount = (arr: string[]) => {
-  let count = 0;
-  arr.forEach(rock => {
-    const rockPositions = getPositions(rock.split(' -> '));
-    for(let i = 0; i < rockPositions.length - 1; i++) {
-      const [ p1, p2 ] = [rockPositions[i], rockPositions[i+1]];
-      if(p1.y === p2.y && Math.abs(p1.x - p2.x) >= 2) {
-        count += Math.abs(p1.x - p2.x) - 1
-      }
-    }
-  })
-  return count;
-}
-
 const getListOfRocks = (arr: string[]) => {
   return arr.flatMap(rock => processRock(rock.split(' -> ')));
 }
@@ -116,7 +102,7 @@ const pourSandPart2 = (rocks: string[], maxDepth: number) => {
      let current = JSON.parse(JSON.stringify(initialPosition));
      if(sandPositions.includes(`500,1`)) return sandPositions.length - rocks.length;
      while(true) {
-      if(current.y === maxDepth + 1) {
+      if(current.y === maxDepth + 2) {
         // console.log('Placed on the floor');
         sandPositions.push(`${current.x},${current.y}`);
         break;
