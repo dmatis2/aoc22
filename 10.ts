@@ -46,6 +46,38 @@ const process = (arr: Instruction[]): number => {
   return totalStrength;
 }
 
+const processPart2 = (arr: Instruction[]): string[][] => {
+  let values = [...Array(241)].map(_ => 1);
+  let curTime = 0
+  let curXValue = 1
+
+  arr.forEach(ins => {
+    if(ins.command === 'noop') {
+      curTime += 1;
+      values[curTime] = curXValue;
+    } else if(ins.command === 'addx') {
+      values[curTime + 1] = curXValue;
+      curXValue += ins.arg!;
+      curTime += 2;
+      values[curTime] = curXValue;
+    }
+  })
+
+  let result = [...Array(6)].map(_ => [...Array(40)].map(_ => ""))
+  for(let row = 0; row < 6; row++) {
+    for(let col = 0; col < 40; col++) {
+      const index = row * 40 + col + 1;
+      if(Math.abs(values[index - 1] - col) <= 1) {
+        result[row][col] = 'X'
+      } else {
+        result[row][col] = ' '
+      }
+    }
+  }
+
+  return result;
+}
+
 const first = (arr: Instruction[]) => {
   console.log(process(arr));
   
@@ -55,9 +87,11 @@ const first = (arr: Instruction[]) => {
 };
 
 const second = (arr: Instruction[]) => {
-  const result = 0;
-  console.log(result);
-  return result;
+  const result = processPart2(arr);
+  result.forEach(row => {
+    console.log(row.join(''));
+  })
+  return 0;
 };
 
 const processInput = (arr: string[]): Instruction[] => {
